@@ -10,7 +10,7 @@
 <script lang='ts'>
 import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
-import * as graphviz from 'd3-graphviz'
+import 'd3-graphviz'
 
 @Component
 export default class Chart extends Vue {
