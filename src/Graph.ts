@@ -1,6 +1,7 @@
 /* eslint-disable space-before-function-paren */
 /* eslint-disable eol-last */
 /* eslint-disable @typescript-eslint/no-array-constructor */
+/* eslint-disable quotes */
 import { IGraph, IGraphNode, IGraphEdge } from './IGraph'
 
 export class Node implements IGraphNode {
@@ -34,6 +35,33 @@ export class Graph implements IGraph {
         this._edges = new Array()
         this._nodes = new Array()
         this._size = 0
+    }
+
+    toDot(): string {
+        let isDir: boolean = this.directedEdges.length !== 0
+        let txtBuild: string[] = ['']
+
+        if (isDir) {
+            txtBuild.push(`digraph  {\n`)
+
+            this._edges.forEach((edge: Edge) => {
+                if (edge.isDirected) {
+                    txtBuild.push(`  ${edge.from.data} -> ${edge.to.data}\n`)
+                } else {
+                    txtBuild.push(`  ${edge.from.data} -> ${edge.to.data}\n`)
+                    txtBuild.push(`  ${edge.to.data} -> ${edge.from.data}\n`)
+                }
+            })
+        } else {
+            txtBuild.push(`graph  {\n`)
+
+            this._edges.forEach((edge: Edge) => {
+                txtBuild.push(`  ${edge.from.data} -> ${edge.to.data}\n`)
+            })
+        }
+
+        txtBuild.push(`}\n`)
+        return txtBuild.join('')
     }
 
     size (): number {
@@ -175,11 +203,13 @@ export class Graph implements IGraph {
         this._size++
     }
 
-    insert(n: any): void {
+    insert(n: any): Node {
         let node: Node = new Node(n)
 
         this._nodes.push(node)
         this._size++
+
+        return node
     }
 
     insertNode(n: Node): void {

@@ -24,27 +24,26 @@ export default class Chart extends Vue {
         const div: HTMLDivElement = this.$refs.stuff as HTMLDivElement
         const doc: Document = document.getRootNode() as Document
 
-        let g: Graph = new Graph()
-        let n: Node = new Node('0')
-        let m: Node = new Node('1')
-        g.insertNode(n)
-        g.insertNode(m)
-        g.insertEdge(n, m)
-        console.log(g)
-
         this.height = doc.body.clientHeight - div.clientHeight
         this.width = div.clientWidth
     }
 
     mounted () {
+        let g: Graph = new Graph()
+        let n: Node = new Node('0')
+        let m: Node = new Node('1')
+        g.insertNode(n)
+        g.insertNode(m)
+        g.insertDirectedEdge(n, m)
+        g.insertDirectedEdge(m, g.insert('3'))
+        console.log(g.toDot())
+
         this.getDim()
         d3.select('#graph')
         .graphviz()
         .height(this.height)
         .width(this.width)
-        .renderDot(`digraph  {
-                        0 -> 1
-                   }`)
+        .renderDot(g.toDot())
     }
 }
 </script>
