@@ -1,7 +1,5 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
     <Chart/>
   </div>
 </template>
@@ -13,7 +11,6 @@ import Chart from './components/Chart.vue'
 
 @Component({
   components: {
-    HelloWorld,
     Chart
   }
 })
@@ -21,12 +18,19 @@ export default class App extends Vue {}
 </script>
 
 <style>
+html, body {
+  padding: 0;
+  margin: 0;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  background-color: bisque;
+  width: 100vw;
+  height: 100vh;
 }
 </style>

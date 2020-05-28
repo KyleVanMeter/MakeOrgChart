@@ -1,7 +1,9 @@
 <template>
-    <div class='circle' ref='stuff'>
-        <h1> Circles </h1>
-        <h2> {{ msg }} </h2>
+    <div id="cont">
+        <div id='circle' ref='stuff'>
+            <h1> Circles </h1>
+            <h2> {{ msg }} </h2>
+        </div>
         <div id='graph'>
         </div>
     </div>
@@ -19,7 +21,9 @@ export default class Chart extends Vue {
     private width: number = 600
     public getDim () {
         const div: HTMLDivElement = this.$refs.stuff as HTMLDivElement
-        this.height = div.clientHeight
+        const doc: Document = document.getRootNode() as Document
+
+        this.height = doc.body.clientHeight - div.clientHeight
         this.width = div.clientWidth
     }
 
@@ -27,7 +31,25 @@ export default class Chart extends Vue {
         this.getDim()
         d3.select('#graph')
         .graphviz()
+        .height(this.height)
+        .width(this.width)
         .renderDot('digraph  {a -> b}')
     }
 }
 </script>
+
+<style scoped>
+
+div#circle span {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+div#graph span {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+</style>
