@@ -13,6 +13,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
+import { Node, Graph } from '../Graph'
 
 @Component
 export default class Chart extends Vue {
@@ -22,6 +23,14 @@ export default class Chart extends Vue {
     public getDim () {
         const div: HTMLDivElement = this.$refs.stuff as HTMLDivElement
         const doc: Document = document.getRootNode() as Document
+
+        let g: Graph = new Graph()
+        let n: Node = new Node('0')
+        let m: Node = new Node('1')
+        g.insertNode(n)
+        g.insertNode(m)
+        g.insertEdge(n, m)
+        console.log(g)
 
         this.height = doc.body.clientHeight - div.clientHeight
         this.width = div.clientWidth
@@ -33,7 +42,9 @@ export default class Chart extends Vue {
         .graphviz()
         .height(this.height)
         .width(this.width)
-        .renderDot('digraph  {a -> b}')
+        .renderDot(`digraph  {
+                        0 -> 1
+                   }`)
     }
 }
 </script>

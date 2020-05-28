@@ -55,7 +55,11 @@
     },
     "rules": {
       "indent": "off",
-      "@typescript-eslint/no-inferrable-types": "off"
+      "@typescript-eslint/no-inferrable-types": "off",
+      "space-before-function-paran": "off",
+      "space-before-function-paren": "off",
+      "prefer-const": "off",
+      "eol-last": "off"
     }
   },
   "browserslist": [
