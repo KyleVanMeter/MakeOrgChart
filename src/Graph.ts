@@ -206,10 +206,18 @@ export class Graph implements IGraph {
     insert(n: any): Node {
         let node: Node = new Node(n)
 
-        this._nodes.push(node)
-        this._size++
+        let dupNodes: Node[] = this._nodes.filter((node: Node) => {
+            return n.data === node.data
+        })
+        console.log(dupNodes)
 
-        return node
+        if (dupNodes.length === 0) {
+           this._nodes.push(node)
+           this._size++
+           return node
+        }
+
+        return dupNodes[0]
     }
 
     insertNode(n: Node): void {
