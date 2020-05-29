@@ -1,8 +1,13 @@
 <template>
     <div id="cont">
         <div id='circle' ref='stuff'>
-            <h1> Circles </h1>
+            <h1> MakeOrgChart </h1>
             <h2> {{ msg }} </h2>
+            <button v-on:click="addNodeEvent">Add Node</button>
+            <input v-model="nodeData">
+            <button v-on:click="addEdgeEvent">Add Edge</button>
+            <input v-model="toNode">
+            <input v-model="fromNode">
         </div>
         <div id='graph'>
         </div>
@@ -20,6 +25,33 @@ export default class Chart extends Vue {
     private msg: string = 'Chart msg'
     private height: number = 500
     private width: number = 600
+    private nodeData: string = ''
+    private toNode: string = ''
+    private fromNode: string = ''
+
+    private _graph: Graph = new Graph()
+    public addNodeEvent () {
+        this._graph.insert(this.nodeData)
+        console.log(this._graph)
+
+        d3.select('#graph')
+        .graphviz()
+        .height(this.height)
+        .width(this.width)
+        .renderDot(this._graph.toDot())
+    }
+
+    public addEdgeEvent () {
+        this._graph.insertDirectedEdge(new Node(this.fromNode), new Node(this.toNode))
+        console.log(this._graph)
+
+        d3.select('#graph')
+        .graphviz()
+        .height(this.height)
+        .width(this.width)
+        .renderDot(this._graph.toDot())
+    }
+
     public getDim () {
         const div: HTMLDivElement = this.$refs.stuff as HTMLDivElement
         const doc: Document = document.getRootNode() as Document
@@ -29,21 +61,8 @@ export default class Chart extends Vue {
     }
 
     mounted () {
-        let g: Graph = new Graph()
-        let n: Node = new Node('0')
-        let m: Node = new Node('1')
-        g.insertNode(n)
-        g.insertNode(m)
-        g.insertDirectedEdge(n, m)
-        g.insertDirectedEdge(m, g.insert('3'))
-        console.log(g.toDot())
-
+        this._graph = new Graph()
         this.getDim()
-        d3.select('#graph')
-        .graphviz()
-        .height(this.height)
-        .width(this.width)
-        .renderDot(g.toDot())
     }
 }
 </script>
