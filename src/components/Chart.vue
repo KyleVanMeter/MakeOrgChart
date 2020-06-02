@@ -87,9 +87,6 @@ export default class Chart extends Vue {
     }
 
     public addEdgeEvent () {
-        /* eslint-disable */
-        var attrMap: HTMLMap = this._attrMap
-        /* eslint-enable */
         this._graph.setEdge(this.toNode, this.fromNode)
         console.log(dot.write(this._graph))
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
