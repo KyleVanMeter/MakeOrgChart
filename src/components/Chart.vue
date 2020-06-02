@@ -25,6 +25,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
+import { HTMLMap } from '../INodeMap'
 import * as dot from 'graphlib-dot'
 
 @Component
@@ -38,6 +39,28 @@ export default class Chart extends Vue {
     private delNode: string = ''
 
     private _graph: Graph = new Graph()
+    private _attrMap: HTMLMap = {}
+
+    public updateMap = (index: string, line: string) => {
+        /* eslint-disable */
+        this._attrMap[index] = line
+        /* eslint-enable */
+        console.log('Updated line: ', index)
+    }
+
+    public getMapVal = (index: string) => {
+        return this._attrMap[index]
+    }
+
+    public isInMap = (index: string) => {
+        for (let [key, value] of Object.entries(this._attrMap)) {
+            if (index === key) {
+                return true
+            }
+        }
+
+        return false
+    }
 
     public deleteNodeEvent () {
         this._graph.removeNode(this.delNode)
@@ -53,6 +76,8 @@ export default class Chart extends Vue {
     public addNodeEvent () {
         this._graph.setNode(this.nodeData)
         console.log(this._graph)
+        this.updateMap(this.nodeData, '')
+        console.log(this._attrMap)
 
         d3.select('#graph')
         .graphviz()
@@ -62,10 +87,28 @@ export default class Chart extends Vue {
     }
 
     public addEdgeEvent () {
+        /* eslint-disable */
+        var attrMap: HTMLMap = this._attrMap
+        /* eslint-enable */
         this._graph.setEdge(this.toNode, this.fromNode)
         console.log(dot.write(this._graph))
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
-            if (line.trim() === this.fromNode) {
+            let whichNode: string = ''
+            let currentNode: string = line.trim()
+
+            if (currentNode === this.fromNode) {
+                whichNode = this.fromNode
+            } else if (currentNode === this.toNode) {
+                whichNode = this.toNode
+            }
+
+            if (this.isInMap(currentNode)) {
+                console.log(currentNode, " is in map already with value: ", this.getMapVal(currentNode))
+                line = this.getMapVal(currentNode)
+                whichNode = ''
+            }
+
+            if (whichNode !== '') {
                 line += ` [shape=plaintext, label=<
                 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
                     <TR>
@@ -78,6 +121,8 @@ export default class Chart extends Vue {
                         <TD>c</TD>
                     </TR>
                 </TABLE>>]`
+
+                this.updateMap(whichNode, line)
             }
 
             return line
