@@ -64,26 +64,61 @@ export default class Chart extends Vue {
 
     public deleteNodeEvent () {
         this._graph.removeNode(this.delNode)
-        console.log('deleted!')
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            let currentNode: string = line.trim()
+            if (currentNode === this.delNode) {
+                return ''
+            }
+
+            if (this.isInMap(currentNode)) {
+                line = this.getMapVal(currentNode)
+            }
+
+            return line
+        }).join('\n')
 
         d3.select('#graph')
         .graphviz()
         .height(this.height)
         .width(this.width)
-        .renderDot(dot.write(this._graph))
+        .renderDot(temp)
     }
 
     public addNodeEvent () {
         this._graph.setNode(this.nodeData)
-        console.log(this._graph)
-        this.updateMap(this.nodeData, '')
-        console.log(this._attrMap)
+
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            let currentNode: string = line.trim()
+            if (this.isInMap(currentNode)) {
+                line = this.getMapVal(currentNode)
+                return line
+            }
+
+            if (currentNode === this.nodeData) {
+                line += ` [shape=plaintext, label=<
+                <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+                    <TR>
+                        <TD>a</TD>
+                    </TR>
+                    <TR>
+                        <TD>b</TD>
+                    </TR>
+                    <TR>
+                        <TD>c</TD>
+                    </TR>
+                </TABLE>>]`
+
+                this.updateMap(this.nodeData, line)
+            }
+
+            return line
+        }).join('\n')
 
         d3.select('#graph')
         .graphviz()
         .height(this.height)
         .width(this.width)
-        .renderDot(dot.write(this._graph))
+        .renderDot(temp)
     }
 
     public addEdgeEvent () {
