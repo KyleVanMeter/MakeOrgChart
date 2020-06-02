@@ -1,3 +1,7 @@
+/* eslint-disable quotes */
+/* eslint quotes 0 */
+/* eslint quotes off */
+/* eslint-disable */
 <template>
     <div id="cont">
         <div id='circle' ref='stuff'>
@@ -59,13 +63,32 @@ export default class Chart extends Vue {
 
     public addEdgeEvent () {
         this._graph.setEdge(this.toNode, this.fromNode)
-        console.log(this._graph)
+        console.log(dot.write(this._graph))
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            if (line.trim() === this.fromNode) {
+                line += ` [shape=plaintext, label=<
+                <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+                    <TR>
+                        <TD>a</TD>
+                    </TR>
+                    <TR>
+                        <TD>b</TD>
+                    </TR>
+                    <TR>
+                        <TD>c</TD>
+                    </TR>
+                </TABLE>>]`
+            }
+
+            return line
+        }).join('\n')
+        console.log(temp)
 
         d3.select('#graph')
         .graphviz()
         .height(this.height)
         .width(this.width)
-        .renderDot(dot.write(this._graph))
+        .renderDot(temp)
     }
 
     public getDim () {
@@ -78,7 +101,42 @@ export default class Chart extends Vue {
 
     mounted () {
         this._graph = new Graph()
+        const test: string = `digraph structs {
+    node [shape=plaintext]
+    struct1 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD>left</TD><TD PORT="f1">mid dle</TD><TD PORT="f2">right</TD></TR>
+</TABLE>>];
+    struct2 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0">
+  <TR><TD PORT="f0">one</TD><TD>two</TD></TR>
+</TABLE>>];
+    struct3 [label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD ROWSPAN="3">hello<BR/>world</TD>
+    <TD COLSPAN="3">b</TD>
+    <TD ROWSPAN="3">g</TD>
+    <TD ROWSPAN="3">h</TD>
+  </TR>
+  <TR>
+    <TD>c</TD><TD PORT="here">d</TD><TD>e</TD>
+  </TR>
+  <TR>
+    <TD COLSPAN="3">f</TD>
+  </TR>
+</TABLE>>];
+    struct1:f1 -> struct2:f0;
+    struct1:f2 -> struct3:here;
+}`
+
         this.getDim()
+
+        d3.select('#graph')
+        .graphviz()
+        .height(this.height)
+        .width(this.width)
+        .renderDot(test)
     }
 }
 </script>

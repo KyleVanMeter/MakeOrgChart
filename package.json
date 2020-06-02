@@ -63,7 +63,8 @@
       "space-before-function-paran": "off",
       "prefer-const": "off",
       "eol-last": "off",
-      "quotes": "off"
+      "quotes": "off",
+      "quotes": 0
     }
   },
   "browserslist": [
