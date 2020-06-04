@@ -25,8 +25,9 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap } from '../INodeMap'
+import { HTMLMap, HTMLTableBuilder } from '../util'
 import * as dot from 'graphlib-dot'
+import { select, selectAll, Selection } from 'd3-selection'
 
 @Component
 export default class Chart extends Vue {
@@ -62,6 +63,15 @@ export default class Chart extends Vue {
         return false
     }
 
+    public interactive () {
+        let nodes = selectAll('.node')
+        /* eslint-disable */
+        let data: Array<number> = Array(1, 2, 3, 4)
+        /* eslint-enable */
+        console.log('do you even call it?')
+        console.log(HTMLTableBuilder<number>(1, 1, data))
+    }
+
     public deleteNodeEvent () {
         this._graph.removeNode(this.delNode)
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
@@ -82,6 +92,7 @@ export default class Chart extends Vue {
         .height(this.height)
         .width(this.width)
         .renderDot(temp)
+        .on('end', this.interactive)
     }
 
     public addNodeEvent () {
@@ -119,6 +130,7 @@ export default class Chart extends Vue {
         .height(this.height)
         .width(this.width)
         .renderDot(temp)
+        .on('end', this.interactive)
     }
 
     public addEdgeEvent () {
@@ -166,6 +178,7 @@ export default class Chart extends Vue {
         .height(this.height)
         .width(this.width)
         .renderDot(temp)
+        .on('end', this.interactive)
     }
 
     public getDim () {
