@@ -6,7 +6,6 @@
     <div id="cont">
         <div id='circle' ref='stuff'>
             <h1> MakeOrgChart </h1>
-            <h2> {{ msg }} </h2>
             <button v-on:click="addNodeEvent">Add Node</button>
             <input v-model="nodeData">
             <button v-on:click="addEdgeEvent">Add Edge</button>
@@ -14,6 +13,8 @@
             <input v-model="fromNode">
             <button v-on:click="deleteNodeEvent">Delete Node</button>
             <input v-model="delNode">
+            <br>
+            <textarea v-model="nodeTemplate"></textarea>
         </div>
         <div id='graph'>
         </div>
@@ -31,7 +32,6 @@ import { select, selectAll, Selection } from 'd3-selection'
 
 @Component
 export default class Chart extends Vue {
-    private msg: string = 'Chart msg'
     private height: number = 500
     private width: number = 600
 
@@ -42,6 +42,19 @@ export default class Chart extends Vue {
     private toNode: string = ''
     private fromNode: string = ''
     private delNode: string = ''
+
+    private nodeTemplate: string = ` [shape=plaintext, label=<
+                <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+                    <TR>
+                        <TD>a</TD>
+                    </TR>
+                    <TR>
+                        <TD>b</TD>
+                    </TR>
+                    <TR>
+                        <TD>c</TD>
+                    </TR>
+                </TABLE>>]`
 
     private _graph: Graph = new Graph()
     private _attrMap: HTMLMap = {}
@@ -117,18 +130,7 @@ export default class Chart extends Vue {
 
             if (currentNode === this.nodeData) {
                 this.setCurrentNode(currentNode)
-                line += ` [shape=plaintext, label=<
-                <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-                    <TR>
-                        <TD>a</TD>
-                    </TR>
-                    <TR>
-                        <TD>b</TD>
-                    </TR>
-                    <TR>
-                        <TD>c</TD>
-                    </TR>
-                </TABLE>>]`
+                line += this.nodeTemplate
 
                 this.updateMap(this.nodeData, line)
             }
@@ -166,18 +168,7 @@ export default class Chart extends Vue {
             }
 
             if (whichNode !== '') {
-                line += ` [shape=plaintext, label=<
-                <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-                    <TR>
-                        <TD>a</TD>
-                    </TR>
-                    <TR>
-                        <TD>b</TD>
-                    </TR>
-                    <TR>
-                        <TD>c</TD>
-                    </TR>
-                </TABLE>>]`
+                line += this.nodeTemplate
 
                 this.updateMap(whichNode, line)
             }
