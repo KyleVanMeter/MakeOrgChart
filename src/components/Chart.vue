@@ -25,7 +25,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap, HTMLTableBuilder } from '../util'
+import { HTMLMap } from '../util'
 import * as dot from 'graphlib-dot'
 import { select, selectAll, Selection } from 'd3-selection'
 
@@ -34,6 +34,10 @@ export default class Chart extends Vue {
     private msg: string = 'Chart msg'
     private height: number = 500
     private width: number = 600
+
+    private currNode: string = ''
+    private prevNode: string = ''
+
     private nodeData: string = ''
     private toNode: string = ''
     private fromNode: string = ''
@@ -63,13 +67,17 @@ export default class Chart extends Vue {
         return false
     }
 
+    public setCurrentNode (node: string) {
+        this.prevNode = this.currNode
+        this.currNode = node
+    }
+
     public interactive () {
         let nodes = selectAll('.node')
         /* eslint-disable */
         let data: Array<number> = Array(1, 2, 3, 4)
         /* eslint-enable */
-        console.log('do you even call it?')
-        console.log(HTMLTableBuilder<number>(1, 1, data))
+        console.log(`current: ${this.currNode}, previous: ${this.prevNode}`)
     }
 
     public deleteNodeEvent () {
@@ -77,6 +85,7 @@ export default class Chart extends Vue {
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
             let currentNode: string = line.trim()
             if (currentNode === this.delNode) {
+                this.setCurrentNode(currentNode)
                 return ''
             }
 
@@ -86,6 +95,7 @@ export default class Chart extends Vue {
 
             return line
         }).join('\n')
+        console.log('del')
 
         d3.select('#graph')
         .graphviz()
@@ -106,6 +116,7 @@ export default class Chart extends Vue {
             }
 
             if (currentNode === this.nodeData) {
+                this.setCurrentNode(currentNode)
                 line += ` [shape=plaintext, label=<
                 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
                     <TR>
@@ -141,8 +152,10 @@ export default class Chart extends Vue {
             let currentNode: string = line.trim()
 
             if (currentNode === this.fromNode) {
+                this.setCurrentNode(currentNode)
                 whichNode = this.fromNode
             } else if (currentNode === this.toNode) {
+                this.setCurrentNode(currentNode)
                 whichNode = this.toNode
             }
 
