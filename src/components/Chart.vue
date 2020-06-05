@@ -43,7 +43,7 @@ export default class Chart extends Vue {
     private fromNode: string = ''
     private delNode: string = ''
 
-    private nodeTemplate: string = ` [shape=plaintext, label=<
+    private nodeTemplate: string = ` [shape=plain, label=<
                 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
                     <TR>
                         <TD>a</TD>

@@ -16,6 +16,8 @@
     "d3-graphviz": "^3.1.0",
     "graphlib": "^2.1.8",
     "graphlib-dot": "^0.6.4",
+    "lodash": "^4.17.15",
+    "marked": "^1.1.0",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.1",
@@ -26,6 +28,8 @@
     "@types/d3-graphviz": "^2.6.3",
     "@types/graphlib": "^2.1.6",
     "@types/graphlib-dot": "^0.6.1",
+    "@types/lodash": "^4.14.155",
+    "@types/marked": "^0.7.4",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "@vue/cli-plugin-babel": "~4.3.0",
@@ -63,7 +67,6 @@
       "space-before-function-paran": "off",
       "prefer-const": "off",
       "eol-last": "off",
-      "quotes": "off",
       "quotes": 0
     }
   },

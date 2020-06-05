@@ -1,17 +1,19 @@
 <template>
   <div id="app">
+    <IO/>
     <Chart/>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import HelloWorld from './components/HelloWorld.vue'
 import Chart from './components/Chart.vue'
+import IO from './components/IO.vue'
 
 @Component({
   components: {
-    Chart
+    Chart,
+    IO
   }
 })
 export default class App extends Vue {}
