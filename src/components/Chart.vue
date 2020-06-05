@@ -14,7 +14,7 @@
             <button v-on:click="deleteNodeEvent">Delete Node</button>
             <input v-model="delNode">
             <br>
-            <textarea v-model="nodeTemplate"></textarea>
+            <textarea v-model="nodeTemplate" rows="10" cols="50"></textarea>
         </div>
         <div id='graph'>
         </div>
@@ -99,6 +99,7 @@ export default class Chart extends Vue {
             let currentNode: string = line.trim()
             if (currentNode === this.delNode) {
                 this.setCurrentNode(currentNode)
+                this.updateMap(currentNode, '')
                 return ''
             }
 
@@ -123,16 +124,18 @@ export default class Chart extends Vue {
 
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
             let currentNode: string = line.trim()
-            if (this.isInMap(currentNode)) {
-                line = this.getMapVal(currentNode)
-                return line
-            }
 
+            /*
+             * As there are no duplicates it can not be the case that it is a new
+             * node and already in the HTMLmap
+             */
             if (currentNode === this.nodeData) {
                 this.setCurrentNode(currentNode)
                 line += this.nodeTemplate
 
                 this.updateMap(this.nodeData, line)
+            } else if (this.isInMap(currentNode)) {
+                line = this.getMapVal(currentNode)
             }
 
             return line
