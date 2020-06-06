@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <IO/>
     <Chart/>
   </div>
 </template>
@@ -8,12 +7,10 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import Chart from './components/Chart.vue'
-import IO from './components/IO.vue'
 
 @Component({
   components: {
-    Chart,
-    IO
+    Chart
   }
 })
 export default class App extends Vue {}

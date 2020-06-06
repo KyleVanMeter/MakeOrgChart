@@ -26,7 +26,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap } from '../util'
+import { HTMLMap, HTMLTableBuilder, HTMLListBuilder } from '../util'
 import * as dot from 'graphlib-dot'
 import { select, selectAll, Selection } from 'd3-selection'
 
@@ -90,6 +90,7 @@ export default class Chart extends Vue {
         /* eslint-disable */
         let data: Array<number> = Array(1, 2, 3, 4)
         /* eslint-enable */
+        console.log(HTMLListBuilder(data))
         console.log(`current: ${this.currNode}, previous: ${this.prevNode}`)
     }
 
