@@ -4,17 +4,41 @@
 /* eslint-disable */
 <template>
     <div id="cont">
+        <h1> MakeOrgChart </h1>
         <div id='circle' ref='stuff'>
-            <h1> MakeOrgChart </h1>
-            <button v-on:click="addNodeEvent">Add Node</button>
-            <input v-model="nodeData">
-            <button v-on:click="addEdgeEvent">Add Edge</button>
-            <input v-model="toNode">
-            <input v-model="fromNode">
-            <button v-on:click="deleteNodeEvent">Delete Node</button>
-            <input v-model="delNode">
-            <br>
-            <textarea v-model="nodeTemplate" rows="10" cols="50"></textarea>
+            <button v-on:click="() => {
+                showAdd = !showAdd
+                showEdg = false
+                showDel = false
+                }">Add Node</button>
+
+            <button v-on:click="() => {
+                showAdd = false
+                showEdg = !showEdg
+                showDel = false
+                }">Add Edg</button>
+
+            <button v-on:click="() => {
+                showAdd = false
+                showEdg = false
+                showDel = !showDel
+                }">Delete Node</button>
+
+            <div v-if="showAdd">
+                <button class="inner_btn" v-on:click="addNodeEvent">Add Node</button>
+                <input v-model="nodeData">
+            </div>
+
+            <div v-if="showEdg">
+                <button class="inner_btn" v-on:click="addEdgeEvent">Add Edge</button>
+                <input v-model="toNode">
+                <input v-model="fromNode">
+            </div>
+
+            <div v-if="showDel">
+                <button class="inner_btn" v-on:click="deleteNodeEvent">Delete Node</button>
+                <input v-model="delNode">
+            </div>
         </div>
         <div id='graph'>
         </div>
@@ -43,6 +67,10 @@ export default class Chart extends Vue {
     private fromNode: string = ''
     private delNode: string = ''
 
+    private showAdd: boolean = false
+    private showDel: boolean = false
+    private showEdg: boolean = false
+
     private nodeTemplate: string = ` [shape=plain, label=<
                 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
                     <TR>
@@ -58,6 +86,27 @@ export default class Chart extends Vue {
 
     private _graph: Graph = new Graph()
     private _attrMap: HTMLMap = {}
+
+    public updateDisplay = (show: string) => {
+        console.log(show)
+        if (show === 'showAdd') {
+            this.showAdd = true
+            this.showEdg = false
+            this.showDel = false
+        }
+
+        if (show === 'showEdg') {
+            this.showAdd = false
+            this.showEdg = true
+            this.showDel = false
+        }
+
+        if (show === 'showDel') {
+            this.showAdd = false
+            this.showEdg = false
+            this.showDel = true
+        }
+    }
 
     public updateMap = (index: string, line: string) => {
         /* eslint-disable */
@@ -90,7 +139,36 @@ export default class Chart extends Vue {
         /* eslint-disable */
         let data: Array<number> = Array(1, 2, 3, 4)
         /* eslint-enable */
-        console.log(HTMLListBuilder(data))
+        nodes.on('click', event => {
+            console.log(document.getElementById(event.attributes.id))
+            let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+                let currentNode = line.trim()
+                if (currentNode === this.prevNode) {
+                    line = line.replace('shape=box', 'shape=plain')
+                    this.updateMap(this.prevNode, line)
+                }
+
+                if (currentNode === this.currNode) {
+                    line = line.replace('shape=plain', 'shape=box')
+                    this.updateMap(this.currNode, line)
+                }
+
+                if (this.isInMap(currentNode)) {
+                    line = this.getMapVal(currentNode)
+                    console.log(line)
+                }
+
+                return line
+            }).join('\n')
+
+            d3.select('#graph')
+            .graphviz()
+            .height(this.height)
+            .width(this.width)
+            .renderDot(temp)
+            .on('end', this.interactive)
+        })
+
         console.log(`current: ${this.currNode}, previous: ${this.prevNode}`)
     }
 
@@ -211,6 +289,11 @@ export default class Chart extends Vue {
 </script>
 
 <style scoped>
+
+.inner_btn {
+    border-radius: 5px;
+    background-color: lightblue;
+}
 
 div#circle span {
     width: 100%;
