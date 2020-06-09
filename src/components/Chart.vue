@@ -10,19 +10,34 @@
                 showAdd = !showAdd
                 showEdg = false
                 showDel = false
+                showTmp = false
                 }">Add Node</button>
 
             <button v-on:click="() => {
                 showAdd = false
                 showEdg = !showEdg
                 showDel = false
+                showTmp = false
                 }">Add Edg</button>
 
             <button v-on:click="() => {
                 showAdd = false
                 showEdg = false
                 showDel = !showDel
+                showTmp = false
                 }">Delete Node</button>
+
+            <button v-on:click="() => {
+                showAdd = false
+                showEdg = false
+                showDel = false
+                showTmp = !showTmp
+                }">Edit Template</button>
+
+            <div v-if="showTmp">
+                <button class="inner_btn" v-on:click="addNodeEvent">Edit Template</button>
+                <textarea rows="10" cols="45" v-model="nodeTemplate"></textarea>
+            </div>
 
             <div v-if="showAdd">
                 <button class="inner_btn" v-on:click="addNodeEvent">Add Node</button>
@@ -70,6 +85,7 @@ export default class Chart extends Vue {
     private showAdd: boolean = false
     private showDel: boolean = false
     private showEdg: boolean = false
+    private showTmp: boolean = false
 
     private nodeTemplate: string = ` [shape=plain, label=<
                 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
