@@ -103,27 +103,6 @@ export default class Chart extends Vue {
     private _graph: Graph = new Graph()
     private _attrMap: HTMLMap = {}
 
-    public updateDisplay = (show: string) => {
-        console.log(show)
-        if (show === 'showAdd') {
-            this.showAdd = true
-            this.showEdg = false
-            this.showDel = false
-        }
-
-        if (show === 'showEdg') {
-            this.showAdd = false
-            this.showEdg = true
-            this.showDel = false
-        }
-
-        if (show === 'showDel') {
-            this.showAdd = false
-            this.showEdg = false
-            this.showDel = true
-        }
-    }
-
     public updateMap = (index: string, line: string) => {
         /* eslint-disable */
         this._attrMap[index] = line
