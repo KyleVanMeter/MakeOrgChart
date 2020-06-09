@@ -135,6 +135,7 @@ export default class Chart extends Vue {
         let data: Array<number> = Array(1, 2, 3, 4)
         /* eslint-enable */
         nodes.on('click', event => {
+            const nodeKey: string = document.getElementById(event.attributes.id).__data__.key
             let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
                 let currentNode = line.trim()
 
@@ -142,14 +143,12 @@ export default class Chart extends Vue {
                     line = this.getMapVal(currentNode)
                 }
 
-                if (currentNode === this.prevNode) {
-                    line = line.replace('shape=box', 'shape=plain')
-                    this.updateMap(this.prevNode, line)
-                }
-
-                if (currentNode === this.currNode) {
+                if (currentNode === nodeKey.trim()) {
                     line = line.replace('shape=plain', 'shape=box')
-                    this.updateMap(this.currNode, line)
+                    this.updateMap(currentNode, line)
+                } else if (line.search('shape=box') !== -1) {
+                    line = line.replace('shape=box', 'shape=plain')
+                    this.updateMap(currentNode, line)
                 }
 
                 return line
