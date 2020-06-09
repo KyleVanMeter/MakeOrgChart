@@ -144,7 +144,12 @@ export default class Chart extends Vue {
                 }
 
                 if (currentNode === nodeKey.trim()) {
-                    line = line.replace('shape=plain', 'shape=box')
+                    if (line.search('shape=box') !== -1) {
+                        line = line.replace('shape=box', 'shape=plain')
+                    } else {
+                        line = line.replace('shape=plain', 'shape=box')
+                    }
+
                     this.updateMap(currentNode, line)
                 } else if (line.search('shape=box') !== -1) {
                     line = line.replace('shape=box', 'shape=plain')
