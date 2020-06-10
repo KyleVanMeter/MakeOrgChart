@@ -18,7 +18,7 @@
                 showEdg = !showEdg
                 showDel = false
                 showTmp = false
-                }">Add Edg</button>
+                }">Add Edge</button>
 
             <button v-on:click="() => {
                 showAdd = false
@@ -35,8 +35,13 @@
                 }">Edit Template</button>
 
             <div v-if="showTmp">
-                <button class="inner_btn" v-on:click="addNodeEvent">Edit Template</button>
+                <button class="inner_btn" v-on:click="blankTemplate">Edit Template</button>
                 <textarea rows="10" cols="45" v-model="nodeTemplate"></textarea>
+                <br>
+                <label for="rows"> rows </label>
+                <input id="rows" v-model="nodeRows">
+                <label for="columns"> columns </label>
+                <input id="columns" v-model="nodeCols">
             </div>
 
             <div v-if="showAdd">
@@ -65,7 +70,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap, HTMLTableBuilder, HTMLListBuilder } from '../util'
+import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable } from '../util'
 import * as dot from 'graphlib-dot'
 import { select, selectAll, Selection } from 'd3-selection'
 
@@ -73,6 +78,9 @@ import { select, selectAll, Selection } from 'd3-selection'
 export default class Chart extends Vue {
     private height: number = 500
     private width: number = 600
+
+    private nodeRows: number = 1
+    private nodeCols: number = 1
 
     private currNode: string = ''
     private prevNode: string = ''
@@ -87,6 +95,8 @@ export default class Chart extends Vue {
     private showEdg: boolean = false
     private showTmp: boolean = false
 
+    private nodeTemplate: string = ` [shape=plain, label=<\n` + HTMLEmptyTable(this.nodeRows, this.nodeCols) + `>]`
+    /*
     private nodeTemplate: string = ` [shape=plain, label=<
                 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
                     <TR>
@@ -99,6 +109,7 @@ export default class Chart extends Vue {
                         <TD>c</TD>
                     </TR>
                 </TABLE>>]`
+                */
 
     private _graph: Graph = new Graph()
     private _attrMap: HTMLMap = {}
@@ -124,9 +135,22 @@ export default class Chart extends Vue {
         return false
     }
 
+    public blankTemplate () {
+        this.nodeTemplate = ` [shape=plain, label=<\n` + HTMLEmptyTable(this.nodeRows, this.nodeCols) + `>]`
+    }
+
     public setCurrentNode (node: string) {
         this.prevNode = this.currNode
         this.currNode = node
+    }
+
+    public render = (temp: string) => {
+            d3.select('#graph')
+            .graphviz()
+            .height(this.height)
+            .width(this.width)
+            .renderDot(temp)
+            .on('end', this.interactive)
     }
 
     public interactive () {
@@ -159,12 +183,7 @@ export default class Chart extends Vue {
                 return line
             }).join('\n')
 
-            d3.select('#graph')
-            .graphviz()
-            .height(this.height)
-            .width(this.width)
-            .renderDot(temp)
-            .on('end', this.interactive)
+            this.render(temp)
         })
 
         console.log(`current: ${this.currNode}, previous: ${this.prevNode}`)
@@ -188,12 +207,7 @@ export default class Chart extends Vue {
         }).join('\n')
         console.log('del')
 
-        d3.select('#graph')
-        .graphviz()
-        .height(this.height)
-        .width(this.width)
-        .renderDot(temp)
-        .on('end', this.interactive)
+        this.render(temp)
     }
 
     public addNodeEvent () {
@@ -218,12 +232,7 @@ export default class Chart extends Vue {
             return line
         }).join('\n')
 
-        d3.select('#graph')
-        .graphviz()
-        .height(this.height)
-        .width(this.width)
-        .renderDot(temp)
-        .on('end', this.interactive)
+        this.render(temp)
     }
 
     public addEdgeEvent () {
@@ -257,12 +266,7 @@ export default class Chart extends Vue {
         }).join('\n')
         console.log(temp)
 
-        d3.select('#graph')
-        .graphviz()
-        .height(this.height)
-        .width(this.width)
-        .renderDot(temp)
-        .on('end', this.interactive)
+        this.render(temp)
     }
 
     public getDim () {
@@ -274,14 +278,15 @@ export default class Chart extends Vue {
     }
 
     mounted () {
-        this._graph = new Graph()
         this.getDim()
+        this._graph = new Graph()
 
         d3.select('#graph')
         .graphviz()
         .height(this.height)
         .width(this.width)
         .renderDot(dot.write(this._graph))
+        .on('end', this.interactive)
     }
 }
 </script>
