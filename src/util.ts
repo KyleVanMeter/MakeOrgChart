@@ -3,7 +3,7 @@ export interface HTMLMap {
     [nodeIndex: string]: string
 }
 
-function HTMLWrapper (inner: string): string {
+export function HTMLWrapper (inner: string): string {
     return ` [shape=plaintext, label=<\n${inner}>]`
 }
 

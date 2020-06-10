@@ -70,7 +70,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable } from '../util'
+import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable, HTMLWrapper } from '../util'
 import * as dot from 'graphlib-dot'
 import { select, selectAll, Selection } from 'd3-selection'
 
@@ -95,7 +95,7 @@ export default class Chart extends Vue {
     private showEdg: boolean = false
     private showTmp: boolean = false
 
-    private nodeTemplate: string = ` [shape=plain, label=<\n` + HTMLEmptyTable(this.nodeRows, this.nodeCols) + `>]`
+    private nodeTemplate: string = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
     /*
     private nodeTemplate: string = ` [shape=plain, label=<
                 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
@@ -136,7 +136,7 @@ export default class Chart extends Vue {
     }
 
     public blankTemplate () {
-        this.nodeTemplate = ` [shape=plain, label=<\n` + HTMLEmptyTable(this.nodeRows, this.nodeCols) + `>]`
+        this.nodeTemplate = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
     }
 
     public setCurrentNode (node: string) {
@@ -145,19 +145,17 @@ export default class Chart extends Vue {
     }
 
     public render = (temp: string) => {
-            d3.select('#graph')
-            .graphviz()
-            .height(this.height)
-            .width(this.width)
-            .renderDot(temp)
-            .on('end', this.interactive)
+        this.getDim()
+        d3.select('#graph')
+        .graphviz()
+        .height(this.height)
+        .width(this.width)
+        .renderDot(temp)
+        .on('end', this.interactive)
     }
 
     public interactive () {
         let nodes = selectAll('.node')
-        /* eslint-disable */
-        let data: Array<number> = Array(1, 2, 3, 4)
-        /* eslint-enable */
         nodes.on('click', event => {
             const nodeKey: string = document.getElementById(event.attributes.id).__data__.key
             let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
