@@ -96,29 +96,22 @@ export default class Chart extends Vue {
     private showTmp: boolean = false
 
     private nodeTemplate: string = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
-    /*
-    private nodeTemplate: string = ` [shape=plain, label=<
-                <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
-                    <TR>
-                        <TD>a</TD>
-                    </TR>
-                    <TR>
-                        <TD>b</TD>
-                    </TR>
-                    <TR>
-                        <TD>c</TD>
-                    </TR>
-                </TABLE>>]`
-                */
 
     private _graph: Graph = new Graph()
     private _attrMap: HTMLMap = {}
 
     public updateMap = (index: string, line: string) => {
-        /* eslint-disable */
-        this._attrMap[index] = line
-        /* eslint-enable */
-        console.log('Updated line: ', index)
+        if (line === '') {
+            delete this._attrMap[index]
+
+            console.log('Deleted line: ', index)
+        } else {
+            /* eslint-disable */
+            this._attrMap[index] = line
+            /* eslint-enable */
+
+            console.log('Updated line: ', index)
+        }
     }
 
     public getMapVal = (index: string) => {
@@ -189,12 +182,14 @@ export default class Chart extends Vue {
 
     public deleteNodeEvent () {
         this._graph.removeNode(this.delNode)
+        if (this.isInMap(this.delNode)) {
+            this.updateMap(this.delNode, '')
+        }
+
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
             let currentNode: string = line.trim()
             if (currentNode === this.delNode) {
                 this.setCurrentNode(currentNode)
-                this.updateMap(currentNode, '')
-                return ''
             }
 
             if (this.isInMap(currentNode)) {

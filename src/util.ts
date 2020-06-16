@@ -26,7 +26,6 @@ export class NodeHTMLMap {
 
         return false
     }
-
 }
 
 export function HTMLWrapper(inner: string): string {
