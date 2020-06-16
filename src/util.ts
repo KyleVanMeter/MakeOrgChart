@@ -3,24 +3,50 @@ export interface HTMLMap {
     [nodeIndex: string]: string
 }
 
-export function HTMLWrapper (inner: string): string {
+export class NodeHTMLMap {
+    private _map: HTMLMap = {}
+
+    public updateMap = (index: string, line: string) => {
+        /* eslint-disable */
+        this._map[index] = line
+        /* eslint-enable */
+        console.log('Updated line: ', index)
+    }
+
+    public getMapVal = (index: string) => {
+        return this._map[index]
+    }
+
+    public isInMap = (index: string) => {
+        for (let [key, value] of Object.entries(this._map)) {
+            if (index === key) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+}
+
+export function HTMLWrapper(inner: string): string {
     return ` [shape=plaintext, label=<\n${inner}>]`
 }
 
-export function HTMLListBuilder<T extends any> (data: Array<T>): string {
+export function HTMLListBuilder<T extends any>(data: Array<T>): string {
     let arrString: string = `<table>\n`
     let numRows = data.length
 
     for (let n = 0; n < numRows; n++) {
         arrString +=
-        `  <tr>\n    <td> ${data[n]} </td>\n  </tr>\n`
+            `  <tr>\n    <td> ${data[n]} </td>\n  </tr>\n`
     }
     arrString += `</table>`
 
     return arrString
 }
 
-export function HTMLEmptyTable (numRows: number, numCols: number): string {
+export function HTMLEmptyTable(numRows: number, numCols: number): string {
     let arrString: string = `<table>\n`
     for (let n = 0; n < numRows; n++) {
         arrString += `<tr>\n`
@@ -35,7 +61,7 @@ export function HTMLEmptyTable (numRows: number, numCols: number): string {
     return arrString
 }
 
-export function HTMLTableBuilder<T> (numRows: number, numCols: number, data: Array<T>): string {
+export function HTMLTableBuilder<T>(numRows: number, numCols: number, data: Array<T>): string {
     let arrString: string = `<table>\n`
     for (let n = 0; n < numRows; n++) {
         arrString += `<tr>\n`
