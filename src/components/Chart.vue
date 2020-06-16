@@ -76,8 +76,8 @@ import { select, selectAll, Selection } from 'd3-selection'
 
 @Component
 export default class Chart extends Vue {
-    private height: number = 500
-    private width: number = 600
+    private height: number = 0
+    private width: number = 0
 
     private nodeRows: number = 1
     private nodeCols: number = 1
@@ -267,7 +267,7 @@ export default class Chart extends Vue {
         this.render(temp)
     }
 
-    public getDim () {
+    public getDim = () => {
         const div: HTMLDivElement = this.$refs.stuff as HTMLDivElement
         const doc: Document = document.getRootNode() as Document
 

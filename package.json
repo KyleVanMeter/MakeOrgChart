@@ -60,10 +60,10 @@
     "rules": {
       "indent": "off",
       "@typescript-eslint/no-inferrable-types": "off",
-      "space-before-function-paran": "off",
       "prefer-const": "off",
       "eol-last": "off",
-      "quotes": 0
+      "quotes": 0,
+      "space-before-function-paren": "off"
     }
   },
   "browserslist": [
