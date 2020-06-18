@@ -39,9 +39,9 @@
                 <textarea rows="10" cols="45" v-model="nodeTemplate"></textarea>
                 <br>
                 <label for="rows"> rows </label>
-                <input id="rows" v-model="nodeRows">
+                <input id="rows" v-model="inputRows">
                 <label for="columns"> columns </label>
-                <input id="columns" v-model="nodeCols">
+                <input id="columns" v-model="inputCols">
             </div>
 
             <div v-if="showAdd">
@@ -81,6 +81,8 @@ export default class Chart extends Vue {
 
     private nodeRows: number = 1
     private nodeCols: number = 1
+    private inputRows: number = 1
+    private inputCols: number = 1
 
     private currNode: string = ''
     private prevNode: string = ''
@@ -98,10 +100,11 @@ export default class Chart extends Vue {
     private nodeTemplate: string = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
 
     private _graph: Graph = new Graph()
-    private _attrMap: HTMLMap = {}
     private _nodeAttrMap: NodeHTMLMap = new NodeHTMLMap()
 
     public blankTemplate () {
+        this.nodeRows = this.inputRows
+        this.nodeCols = this.inputCols
         this.nodeTemplate = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
     }
 
@@ -156,7 +159,7 @@ export default class Chart extends Vue {
     public deleteNodeEvent () {
         this._graph.removeNode(this.delNode)
         if (this._nodeAttrMap.isInMap(this.delNode)) {
-            this._nodeAttrMap.updateMap(this.delNode, '')
+            this._nodeAttrMap.deleteItem(this.delNode)
         }
 
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
@@ -171,7 +174,7 @@ export default class Chart extends Vue {
 
             return line
         }).join('\n')
-        console.log('del')
+        console.log(`deleted node ${this.delNode}`)
 
         this.render(temp)
     }
@@ -190,20 +193,20 @@ export default class Chart extends Vue {
                 this.setCurrentNode(currentNode)
                 line += this.nodeTemplate
 
-                this._nodeAttrMap.updateMap(this.nodeData, line)
+                this._nodeAttrMap.addItem(this.nodeData, line, this.nodeRows, this.nodeCols)
             } else if (this._nodeAttrMap.isInMap(currentNode)) {
                 line = this._nodeAttrMap.getMapVal(currentNode)
             }
 
             return line
         }).join('\n')
+        console.log(`Added node ${this.nodeData}`)
 
         this.render(temp)
     }
 
     public addEdgeEvent () {
         this._graph.setEdge(this.toNode, this.fromNode)
-        console.log(dot.write(this._graph))
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
             let whichNode: string = ''
             let currentNode: string = line.trim()
@@ -217,7 +220,7 @@ export default class Chart extends Vue {
             }
 
             if (this._nodeAttrMap.isInMap(currentNode)) {
-                console.log(currentNode, " is in map already with value: ", this._nodeAttrMap.getMapVal(currentNode))
+                console.log(`${currentNode} is in map already with value: ${this._nodeAttrMap.getMapVal(currentNode)}`)
                 line = this._nodeAttrMap.getMapVal(currentNode)
                 whichNode = ''
             }
@@ -225,12 +228,12 @@ export default class Chart extends Vue {
             if (whichNode !== '') {
                 line += this.nodeTemplate
 
-                this._nodeAttrMap.updateMap(whichNode, line)
+                this._nodeAttrMap.addItem(whichNode, line, this.nodeRows, this.nodeCols)
             }
 
             return line
         }).join('\n')
-        console.log(temp)
+        console.log(`Added edge ${this.fromNode} -> ${this.toNode}`)
 
         this.render(temp)
     }
