@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/member-delimiter-style */
-type MapData = {
-    nodeIndex: string,
+type TableDim = {
     rows: number,
     cols: number
 }
@@ -8,34 +7,61 @@ type MapData = {
 export interface HTMLMap {
     [nodeIndex: string]: string
 }
+export interface TableMap {
+    [nodeIndex: string]: TableDim
+}
 
 export class NodeHTMLMap {
     private _map: HTMLMap = {}
+    private _dim: TableMap = {}
 
     constructor() {
         this._map = {}
+        this._dim = {}
+        this.deleteItem = this.deleteItem.bind(this)
+        this.addItem = this.addItem.bind(this)
         this.updateMap = this.updateMap.bind(this)
         this.getMapVal = this.getMapVal.bind(this)
+        this.getMapDim = this.getMapDim.bind(this)
         this.isInMap = this.isInMap.bind(this)
+    }
+
+    public deleteItem = (index: string) => {
+        delete this._map[index]
+        delete this._dim[index]
+
+        console.log('Deleted line: ', index)
+    }
+
+    public addItem = (index: string, line: string, row: number, col: number) => {
+        console.log(this._map)
+        console.log(this._dim)
+        /* eslint-disable */
+        this._dim[index] = { rows: row, cols: col }
+        this._map[index] = line
+        /* eslint-enable */
+
+        console.log('Added line: ', index)
     }
 
     public updateMap = (index: string, line: string) => {
         console.log(this._map)
-        if (line === '') {
-            delete this._map[index]
-
-            console.log('Deleted line: ', index)
-        } else {
+        if (this.isInMap(index)) {
+            console.log('Updated line: ', index)
             /* eslint-disable */
             this._map[index] = line
             /* eslint-enable */
-
-            console.log('Updated line: ', index)
+        } else {
+            console.log('Update failed.  Item not in map.')
         }
     }
 
     public getMapVal = (index: string) => {
         return this._map[index]
+    }
+
+    public getMapDim = (index: string) => {
+        return this._dim[index]
     }
 
     public isInMap = (index: string) => {
