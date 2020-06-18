@@ -1,4 +1,10 @@
 /* eslint-disable @typescript-eslint/member-delimiter-style */
+type MapData = {
+    nodeIndex: string,
+    rows: number,
+    cols: number
+}
+
 export interface HTMLMap {
     [nodeIndex: string]: string
 }
@@ -6,11 +12,26 @@ export interface HTMLMap {
 export class NodeHTMLMap {
     private _map: HTMLMap = {}
 
+    constructor() {
+        this._map = {}
+        this.updateMap = this.updateMap.bind(this)
+        this.getMapVal = this.getMapVal.bind(this)
+        this.isInMap = this.isInMap.bind(this)
+    }
+
     public updateMap = (index: string, line: string) => {
-        /* eslint-disable */
-        this._map[index] = line
-        /* eslint-enable */
-        console.log('Updated line: ', index)
+        console.log(this._map)
+        if (line === '') {
+            delete this._map[index]
+
+            console.log('Deleted line: ', index)
+        } else {
+            /* eslint-disable */
+            this._map[index] = line
+            /* eslint-enable */
+
+            console.log('Updated line: ', index)
+        }
     }
 
     public getMapVal = (index: string) => {
