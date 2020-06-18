@@ -70,7 +70,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable, HTMLWrapper } from '../util'
+import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable, HTMLWrapper, NodeHTMLMap } from '../util'
 import * as dot from 'graphlib-dot'
 import { select, selectAll, Selection } from 'd3-selection'
 
@@ -99,34 +99,7 @@ export default class Chart extends Vue {
 
     private _graph: Graph = new Graph()
     private _attrMap: HTMLMap = {}
-
-    public updateMap = (index: string, line: string) => {
-        if (line === '') {
-            delete this._attrMap[index]
-
-            console.log('Deleted line: ', index)
-        } else {
-            /* eslint-disable */
-            this._attrMap[index] = line
-            /* eslint-enable */
-
-            console.log('Updated line: ', index)
-        }
-    }
-
-    public getMapVal = (index: string) => {
-        return this._attrMap[index]
-    }
-
-    public isInMap = (index: string) => {
-        for (let [key, value] of Object.entries(this._attrMap)) {
-            if (index === key) {
-                return true
-            }
-        }
-
-        return false
-    }
+    private _nodeAttrMap: NodeHTMLMap = new NodeHTMLMap()
 
     public blankTemplate () {
         this.nodeTemplate = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
@@ -154,8 +127,8 @@ export default class Chart extends Vue {
             let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
                 let currentNode = line.trim()
 
-                if (this.isInMap(currentNode)) {
-                    line = this.getMapVal(currentNode)
+                if (this._nodeAttrMap.isInMap(currentNode)) {
+                    line = this._nodeAttrMap.getMapVal(currentNode)
                 }
 
                 if (currentNode === nodeKey.trim()) {
@@ -165,10 +138,10 @@ export default class Chart extends Vue {
                         line = line.replace('shape=plain', 'shape=box')
                     }
 
-                    this.updateMap(currentNode, line)
+                    this._nodeAttrMap.updateMap(currentNode, line)
                 } else if (line.search('shape=box') !== -1) {
                     line = line.replace('shape=box', 'shape=plain')
-                    this.updateMap(currentNode, line)
+                    this._nodeAttrMap.updateMap(currentNode, line)
                 }
 
                 return line
@@ -182,8 +155,8 @@ export default class Chart extends Vue {
 
     public deleteNodeEvent () {
         this._graph.removeNode(this.delNode)
-        if (this.isInMap(this.delNode)) {
-            this.updateMap(this.delNode, '')
+        if (this._nodeAttrMap.isInMap(this.delNode)) {
+            this._nodeAttrMap.updateMap(this.delNode, '')
         }
 
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
@@ -192,8 +165,8 @@ export default class Chart extends Vue {
                 this.setCurrentNode(currentNode)
             }
 
-            if (this.isInMap(currentNode)) {
-                line = this.getMapVal(currentNode)
+            if (this._nodeAttrMap.isInMap(currentNode)) {
+                line = this._nodeAttrMap.getMapVal(currentNode)
             }
 
             return line
@@ -217,9 +190,9 @@ export default class Chart extends Vue {
                 this.setCurrentNode(currentNode)
                 line += this.nodeTemplate
 
-                this.updateMap(this.nodeData, line)
-            } else if (this.isInMap(currentNode)) {
-                line = this.getMapVal(currentNode)
+                this._nodeAttrMap.updateMap(this.nodeData, line)
+            } else if (this._nodeAttrMap.isInMap(currentNode)) {
+                line = this._nodeAttrMap.getMapVal(currentNode)
             }
 
             return line
@@ -243,16 +216,16 @@ export default class Chart extends Vue {
                 whichNode = this.toNode
             }
 
-            if (this.isInMap(currentNode)) {
-                console.log(currentNode, " is in map already with value: ", this.getMapVal(currentNode))
-                line = this.getMapVal(currentNode)
+            if (this._nodeAttrMap.isInMap(currentNode)) {
+                console.log(currentNode, " is in map already with value: ", this._nodeAttrMap.getMapVal(currentNode))
+                line = this._nodeAttrMap.getMapVal(currentNode)
                 whichNode = ''
             }
 
             if (whichNode !== '') {
                 line += this.nodeTemplate
 
-                this.updateMap(whichNode, line)
+                this._nodeAttrMap.updateMap(whichNode, line)
             }
 
             return line
@@ -273,6 +246,7 @@ export default class Chart extends Vue {
     mounted () {
         this.getDim()
         this._graph = new Graph()
+        this._nodeAttrMap = new NodeHTMLMap()
 
         d3.select('#graph')
         .graphviz()
