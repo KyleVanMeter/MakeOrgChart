@@ -52,26 +52,20 @@ export class NodeHTMLMap {
             this._map[index] = line
             /* eslint-enable */
         } else {
-            console.log('Update failed.  Item not in map.')
+            console.log(`Update failed.  ${index} not in map.`)
         }
     }
 
-    public getMapVal = (index: string) => {
+    public getMapVal = (index: string): string => {
         return this._map[index]
     }
 
-    public getMapDim = (index: string) => {
+    public getMapDim = (index: string): TableDim => {
         return this._dim[index]
     }
 
     public isInMap = (index: string) => {
-        for (let [key, value] of Object.entries(this._map)) {
-            if (index === key) {
-                return true
-            }
-        }
-
-        return false
+        return (index in this._map)
     }
 }
 
