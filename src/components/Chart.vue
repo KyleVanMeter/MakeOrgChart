@@ -114,6 +114,8 @@ export default class Chart extends Vue {
     }
 
     public render = (temp: string) => {
+        console.log(this._graph.sinks()[0])
+
         this.getDim()
         d3.select('#graph')
         .graphviz()
