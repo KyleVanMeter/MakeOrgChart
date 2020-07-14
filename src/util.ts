@@ -11,6 +11,13 @@ export interface TableMap {
     [nodeIndex: string]: TableDim
 }
 
+/*
+ * This class is unfortunately required despite graphlib-dot as that library
+ * does not support HTML node labels.  Instead we must manually parse through
+ * the generated dot file and place the labels ourselves.
+ * TODO: Look into appending rather than replacing lines so as to support
+ * node labels other than HTML that are supported by graphlib-dot
+ */
 export class NodeHTMLMap {
     private _map: HTMLMap = {}
     private _dim: TableMap = {}

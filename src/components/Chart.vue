@@ -6,6 +6,7 @@
     <div id="cont">
         <h1> MakeOrgChart </h1>
         <div id='circle' ref='stuff'>
+            <button v-on:click="collapseLeafNodes">Click Me :)</button>
             <button v-on:click="() => {
                 showAdd = !showAdd
                 showEdg = false
@@ -114,8 +115,6 @@ export default class Chart extends Vue {
     }
 
     public render = (temp: string) => {
-        console.log(this._graph.sinks()[0])
-
         this.getDim()
         d3.select('#graph')
         .graphviz()
@@ -123,6 +122,51 @@ export default class Chart extends Vue {
         .width(this.width)
         .renderDot(temp)
         .on('end', this.interactive)
+    }
+
+    public collapseLeafNodes () {
+        /*
+         * Get the list of leaf nodes in the graph by checking if they have 0
+         * children
+         */
+        const leafList: string[] = this._graph.nodes().filter((node: string) => {
+            return (this._graph.successors(node) as string[]).length === 0
+        })
+
+        leafList.forEach((node: string) => {
+            // Assuming that the graph is strictly a tree (thus having 1 parent)
+            // TODO: deal with corner-case of having a single-node graph
+            const parent: string = (this._graph.predecessors(node) as string[])[0]
+
+            // Only re-arrange nodes for several siblings
+            const siblings: string[] = (this._graph.successors(parent) as string[])
+            if (siblings.length > 1) {
+                siblings.forEach((child: string, index: number) => {
+                    /*
+                     * We skip the first index as graphviz defines its initial
+                     * placement.  We are defining the other nodes as aligned
+                     * vertically to it.
+                     */
+                    if (index === 0) {
+                        return
+                    }
+
+                    if (child === parent) { 
+                        return
+                    }
+
+                    // Disable placing constraint for existing edges
+                    this._graph.setEdge(parent, child, { constraint: 'false' })
+                    /*
+                     * Add post-fix ordering invisible edges to siblings for
+                     * correct layout
+                     */
+                    this._graph.setEdge(siblings[index - 1], child, { style: 'invis' })
+                })
+            }
+        })
+
+        console.log('result is ', dot.write(this._graph))
     }
 
     public interactive () {
@@ -251,6 +295,7 @@ export default class Chart extends Vue {
     mounted () {
         this.getDim()
         this._graph = new Graph()
+        // this._graph.setNode('graph', { lines: 'ortho', ranksep: '0.1' })
         this._nodeAttrMap = new NodeHTMLMap()
 
         d3.select('#graph')
