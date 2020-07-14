@@ -134,6 +134,15 @@ export default class Chart extends Vue {
         })
 
         leafList.forEach((node: string) => {
+            /*
+             * Graphlib treats 'graph' as just another node.  In
+             * graphviz 'graph' is a property of the the whole graph so
+             * it must be explicitly ignored
+             */
+            if (node === 'graph') {
+                return
+            }
+
             // Assuming that the graph is strictly a tree (thus having 1 parent)
             // TODO: deal with corner-case of having a single-node graph
             const parent: string = (this._graph.predecessors(node) as string[])[0]
@@ -151,7 +160,7 @@ export default class Chart extends Vue {
                         return
                     }
 
-                    if (child === parent) { 
+                    if (child === parent) {
                         return
                     }
 
@@ -295,7 +304,7 @@ export default class Chart extends Vue {
     mounted () {
         this.getDim()
         this._graph = new Graph()
-        // this._graph.setNode('graph', { lines: 'ortho', ranksep: '0.1' })
+        this._graph.setNode('graph', { lines: 'ortho', ranksep: '0.1' })
         this._nodeAttrMap = new NodeHTMLMap()
 
         d3.select('#graph')
