@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/member-delimiter-style */
+import { Graph } from 'graphlib'
+
 type TableDim = {
     rows: number,
     cols: number
@@ -73,6 +75,41 @@ export class NodeHTMLMap {
 
     public isInMap = (index: string) => {
         return (index in this._map)
+    }
+}
+
+export class NodeGraph {
+    private _graph = new Graph()
+    private _nodeAttrMap = new NodeHTMLMap()
+
+    constructor() {
+        this._graph = new Graph()
+        this._graph.setNode('graph', { lines: 'ortho', ranksep: '0.1' })
+        this._nodeAttrMap = new NodeHTMLMap()
+    }
+
+    public addNode() {
+
+    }
+
+    public addEdge() {
+
+    }
+
+    public deleteNode() {
+
+    }
+
+    public deleteEdge() {
+
+    }
+
+    public collapseLeafNodes() {
+
+    }
+
+    public expandLeafNodes() {
+
     }
 }
 
