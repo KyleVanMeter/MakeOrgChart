@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/member-delimiter-style */
-import { Graph } from 'graphlib'
+import { Graph, Edge } from 'graphlib'
+import * as dot from 'graphlib-dot'
 
 type TableDim = {
     rows: number,
@@ -88,28 +89,160 @@ export class NodeGraph {
         this._nodeAttrMap = new NodeHTMLMap()
     }
 
-    public addNode() {
-
+    public getDot(): string {
+        return dot.write(this._graph)
     }
 
-    public addEdge() {
+    public addNode(nodeData: string, nodeTemplate: string, nodeRows: number, nodeCols: number): string {
+        this._graph.setNode(nodeData)
 
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            let currentNode: string = line.trim()
+
+            /*
+             * As there are no duplicates it can not be the case that it is a new
+             * node and already in the HTMLmap
+             */
+            if (currentNode === nodeData) {
+                line += nodeTemplate
+
+                this._nodeAttrMap.addItem(nodeData, line, nodeRows, nodeCols)
+            } else if (this._nodeAttrMap.isInMap(currentNode)) {
+                line = this._nodeAttrMap.getMapVal(currentNode)
+            }
+
+            return line
+        }).join('\n')
+        console.log(`Added node ${nodeData}`)
+
+        return temp
     }
 
-    public deleteNode() {
+    public addEdge(toNode: string, fromNode: string, nodeTemplate: string, nodeRows: number, nodeCols: number): string {
+        this._graph.setEdge(toNode, fromNode)
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            let whichNode: string = ''
+            let currentNode: string = line.trim()
 
+            if (currentNode === fromNode) {
+                whichNode = fromNode
+            } else if (currentNode === toNode) {
+                whichNode = toNode
+            }
+
+            if (this._nodeAttrMap.isInMap(currentNode)) {
+                console.log(`${currentNode} is in map already with value: ${this._nodeAttrMap.getMapVal(currentNode)}`)
+                line = this._nodeAttrMap.getMapVal(currentNode)
+                whichNode = ''
+            }
+
+            if (whichNode !== '') {
+                line += nodeTemplate
+
+                this._nodeAttrMap.addItem(whichNode, line, nodeRows, nodeCols)
+            }
+
+            return line
+        }).join('\n')
+        console.log(`Added edge ${fromNode} -> ${toNode}`)
+
+        return temp
     }
 
-    public deleteEdge() {
+    public deleteNode(delNode: string): string {
+        this._graph.removeNode(delNode)
+        if (this._nodeAttrMap.isInMap(delNode)) {
+            this._nodeAttrMap.deleteItem(delNode)
+        }
 
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            let currentNode: string = line.trim()
+
+            /*
+             * if (currentNode === delNode) {
+             * }
+            */
+            if (this._nodeAttrMap.isInMap(currentNode)) {
+                line = this._nodeAttrMap.getMapVal(currentNode)
+            }
+
+            return line
+        }).join('\n')
+        console.log(`deleted node ${delNode}`)
+
+        return temp
+    }
+
+    public deleteEdge(toNode: string, fromNode: string): string {
+        this._graph.removeEdge(toNode, fromNode)
+
+        return dot.write(this._graph)
     }
 
     public collapseLeafNodes() {
+        /*
+         * Get the list of leaf nodes in the graph by checking if they have 0
+         * children
+         */
+        const leafList: string[] = this._graph.nodes().filter((node: string) => {
+            return (this._graph.successors(node) as string[]).length === 0
+        })
 
+        leafList.forEach((node: string) => {
+            /*
+             * Graphlib treats 'graph' as just another node.  In
+             * graphviz 'graph' is a property of the the whole graph so
+             * it must be explicitly ignored
+             */
+            if (node === 'graph') {
+                return
+            }
+
+            // Assuming that the graph is strictly a tree (thus having 1 parent)
+            // TODO: deal with corner-case of having a single-node graph
+            const parent: string = (this._graph.predecessors(node) as string[])[0]
+
+            // Only re-arrange nodes for several siblings
+            const siblings: string[] = (this._graph.successors(parent) as string[])
+            if (siblings.length > 1) {
+                siblings.forEach((child: string, index: number) => {
+                    /*
+                     * We skip the first index as graphviz defines its initial
+                     * placement.  We are defining the other nodes as aligned
+                     * vertically to it.
+                     */
+                    if (index === 0) {
+                        return
+                    }
+
+                    if (child === parent) {
+                        return
+                    }
+
+                    // Disable placing constraint for existing edges
+                    this._graph.setEdge(parent, child, { constraint: 'false' })
+                    /*
+                     * Add post-fix ordering invisible edges to siblings for
+                     * correct layout
+                     */
+                    this._graph.setEdge(siblings[index - 1], child, { style: 'invis' })
+                })
+            }
+        })
+
+        console.log('result is ', dot.write(this._graph))
     }
 
     public expandLeafNodes() {
+        this._graph.edges().forEach((edge: Edge) => {
+            if (this._graph.edge(edge)['style'] === 'invis') {
+                this._graph.removeEdge(edge)
+            }
 
+            if (this._graph.edge(edge)['constraint'] === 'false') {
+                this._graph.setEdge(edge, { constraint: 'true' })
+            }
+        })
     }
 }
 
