@@ -7,6 +7,11 @@ type TableDim = {
     cols: number
 }
 
+export type RetVal = {
+    dot: string,
+    nodeVal?: string
+}
+
 export interface HTMLMap {
     [nodeIndex: string]: string
 }
@@ -93,9 +98,10 @@ export class NodeGraph {
         return dot.write(this._graph)
     }
 
-    public addNode(nodeData: string, nodeTemplate: string, nodeRows: number, nodeCols: number): string {
+    public addNode(nodeData: string, nodeTemplate: string, nodeRows: number, nodeCols: number): RetVal {
         this._graph.setNode(nodeData)
 
+        let node: string | undefined
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
             let currentNode: string = line.trim()
 
@@ -105,6 +111,7 @@ export class NodeGraph {
              */
             if (currentNode === nodeData) {
                 line += nodeTemplate
+                node = currentNode
 
                 this._nodeAttrMap.addItem(nodeData, line, nodeRows, nodeCols)
             } else if (this._nodeAttrMap.isInMap(currentNode)) {
@@ -115,18 +122,22 @@ export class NodeGraph {
         }).join('\n')
         console.log(`Added node ${nodeData}`)
 
-        return temp
+        return { dot: temp, nodeVal: node }
     }
 
-    public addEdge(toNode: string, fromNode: string, nodeTemplate: string, nodeRows: number, nodeCols: number): string {
+    public addEdge(toNode: string, fromNode: string, nodeTemplate: string, nodeRows: number, nodeCols: number): RetVal {
         this._graph.setEdge(toNode, fromNode)
+
+        let node: string | undefined
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
             let whichNode: string = ''
             let currentNode: string = line.trim()
 
             if (currentNode === fromNode) {
+                node = currentNode
                 whichNode = fromNode
             } else if (currentNode === toNode) {
+                node = currentNode
                 whichNode = toNode
             }
 
@@ -146,22 +157,23 @@ export class NodeGraph {
         }).join('\n')
         console.log(`Added edge ${fromNode} -> ${toNode}`)
 
-        return temp
+        return { dot: temp, nodeVal: node }
     }
 
-    public deleteNode(delNode: string): string {
+    public deleteNode(delNode: string): RetVal {
         this._graph.removeNode(delNode)
         if (this._nodeAttrMap.isInMap(delNode)) {
             this._nodeAttrMap.deleteItem(delNode)
         }
 
+        let node: string | undefined
         let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
             let currentNode: string = line.trim()
 
-            /*
-             * if (currentNode === delNode) {
-             * }
-            */
+            if (currentNode === delNode) {
+                node = currentNode
+            }
+
             if (this._nodeAttrMap.isInMap(currentNode)) {
                 line = this._nodeAttrMap.getMapVal(currentNode)
             }
@@ -170,7 +182,7 @@ export class NodeGraph {
         }).join('\n')
         console.log(`deleted node ${delNode}`)
 
-        return temp
+        return { dot: temp, nodeVal: node }
     }
 
     public deleteEdge(toNode: string, fromNode: string): string {
@@ -235,14 +247,45 @@ export class NodeGraph {
 
     public expandLeafNodes() {
         this._graph.edges().forEach((edge: Edge) => {
-            if (this._graph.edge(edge)['style'] === 'invis') {
+            if (this._graph.edge(edge).style === 'invis') {
                 this._graph.removeEdge(edge)
             }
 
-            if (this._graph.edge(edge)['constraint'] === 'false') {
+            if (this._graph.edge(edge).constraint === 'false') {
                 this._graph.setEdge(edge, { constraint: 'true' })
             }
         })
+    }
+
+    public clickHandler(nodeKey?: string): string {
+        if (nodeKey === null || nodeKey === undefined) {
+            return ""
+        }
+
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            let currentNode = line.trim()
+
+            if (this._nodeAttrMap.isInMap(currentNode)) {
+                line = this._nodeAttrMap.getMapVal(currentNode)
+            }
+
+            if (currentNode === (nodeKey as string).trim()) {
+                if (line.search('shape=box') !== -1) {
+                    line = line.replace('shape=box', 'shape=plain')
+                } else {
+                    line = line.replace('shape=plain', 'shape=box')
+                }
+
+                this._nodeAttrMap.updateMap(currentNode, line)
+            } else if (line.search('shape=box') !== -1) {
+                line = line.replace('shape=box', 'shape=plain')
+                this._nodeAttrMap.updateMap(currentNode, line)
+            }
+
+            return line
+        }).join('\n')
+
+        return temp
     }
 }
 

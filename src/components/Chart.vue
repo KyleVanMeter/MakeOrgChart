@@ -71,7 +71,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable, HTMLWrapper, NodeHTMLMap } from '../util'
+import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable, HTMLWrapper, NodeHTMLMap, NodeGraph, RetVal } from '../util'
 import * as dot from 'graphlib-dot'
 import { select, selectAll, Selection } from 'd3-selection'
 
@@ -100,8 +100,8 @@ export default class Chart extends Vue {
 
     private nodeTemplate: string = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
 
-    private _graph: Graph = new Graph()
     private _nodeAttrMap: NodeHTMLMap = new NodeHTMLMap()
+    private _nodeGraph: NodeGraph = new NodeGraph()
 
     public blankTemplate () {
         this.nodeRows = this.inputRows
@@ -125,172 +125,45 @@ export default class Chart extends Vue {
     }
 
     public collapseLeafNodes () {
-        /*
-         * Get the list of leaf nodes in the graph by checking if they have 0
-         * children
-         */
-        const leafList: string[] = this._graph.nodes().filter((node: string) => {
-            return (this._graph.successors(node) as string[]).length === 0
-        })
-
-        leafList.forEach((node: string) => {
-            /*
-             * Graphlib treats 'graph' as just another node.  In
-             * graphviz 'graph' is a property of the the whole graph so
-             * it must be explicitly ignored
-             */
-            if (node === 'graph') {
-                return
-            }
-
-            // Assuming that the graph is strictly a tree (thus having 1 parent)
-            // TODO: deal with corner-case of having a single-node graph
-            const parent: string = (this._graph.predecessors(node) as string[])[0]
-
-            // Only re-arrange nodes for several siblings
-            const siblings: string[] = (this._graph.successors(parent) as string[])
-            if (siblings.length > 1) {
-                siblings.forEach((child: string, index: number) => {
-                    /*
-                     * We skip the first index as graphviz defines its initial
-                     * placement.  We are defining the other nodes as aligned
-                     * vertically to it.
-                     */
-                    if (index === 0) {
-                        return
-                    }
-
-                    if (child === parent) {
-                        return
-                    }
-
-                    // Disable placing constraint for existing edges
-                    this._graph.setEdge(parent, child, { constraint: 'false' })
-                    /*
-                     * Add post-fix ordering invisible edges to siblings for
-                     * correct layout
-                     */
-                    this._graph.setEdge(siblings[index - 1], child, { style: 'invis' })
-                })
-            }
-        })
-
-        console.log('result is ', dot.write(this._graph))
+        this._nodeGraph.collapseLeafNodes()
     }
 
     public interactive () {
         let nodes = selectAll('.node')
         nodes.on('click', event => {
             const nodeKey: string = document.getElementById(event.attributes.id).__data__.key
-            let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
-                let currentNode = line.trim()
-
-                if (this._nodeAttrMap.isInMap(currentNode)) {
-                    line = this._nodeAttrMap.getMapVal(currentNode)
-                }
-
-                if (currentNode === nodeKey.trim()) {
-                    if (line.search('shape=box') !== -1) {
-                        line = line.replace('shape=box', 'shape=plain')
-                    } else {
-                        line = line.replace('shape=plain', 'shape=box')
-                    }
-
-                    this._nodeAttrMap.updateMap(currentNode, line)
-                } else if (line.search('shape=box') !== -1) {
-                    line = line.replace('shape=box', 'shape=plain')
-                    this._nodeAttrMap.updateMap(currentNode, line)
-                }
-
-                return line
-            }).join('\n')
-
-            this.render(temp)
+            this.render(this._nodeGraph.clickHandler(nodeKey))
         })
 
         console.log(`current: ${this.currNode}, previous: ${this.prevNode}`)
     }
 
     public deleteNodeEvent () {
-        this._graph.removeNode(this.delNode)
-        if (this._nodeAttrMap.isInMap(this.delNode)) {
-            this._nodeAttrMap.deleteItem(this.delNode)
+        let res: RetVal = this._nodeGraph.deleteNode(this.delNode)
+        if (res.nodeVal !== undefined) {
+            this.setCurrentNode(res.nodeVal as string)
         }
 
-        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
-            let currentNode: string = line.trim()
-            if (currentNode === this.delNode) {
-                this.setCurrentNode(currentNode)
-            }
-
-            if (this._nodeAttrMap.isInMap(currentNode)) {
-                line = this._nodeAttrMap.getMapVal(currentNode)
-            }
-
-            return line
-        }).join('\n')
-        console.log(`deleted node ${this.delNode}`)
-
-        this.render(temp)
+        this.render(res.dot as string)
     }
 
     public addNodeEvent () {
-        this._graph.setNode(this.nodeData)
+        let res: RetVal = this._nodeGraph.addNode(this.nodeData, this.nodeTemplate, this.nodeRows, this.nodeCols)
+        if (res.nodeVal !== undefined) {
+            this.setCurrentNode(res.nodeVal as string)
+        }
 
-        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
-            let currentNode: string = line.trim()
-
-            /*
-             * As there are no duplicates it can not be the case that it is a new
-             * node and already in the HTMLmap
-             */
-            if (currentNode === this.nodeData) {
-                this.setCurrentNode(currentNode)
-                line += this.nodeTemplate
-
-                this._nodeAttrMap.addItem(this.nodeData, line, this.nodeRows, this.nodeCols)
-            } else if (this._nodeAttrMap.isInMap(currentNode)) {
-                line = this._nodeAttrMap.getMapVal(currentNode)
-            }
-
-            return line
-        }).join('\n')
-        console.log(`Added node ${this.nodeData}`)
-
-        this.render(temp)
+        this.render(res.dot as string)
     }
 
     public addEdgeEvent () {
-        this._graph.setEdge(this.toNode, this.fromNode)
-        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
-            let whichNode: string = ''
-            let currentNode: string = line.trim()
+        let res: RetVal = this._nodeGraph.addEdge(this.toNode, this.fromNode, this.nodeTemplate, this.nodeRows, this.nodeCols)
 
-            if (currentNode === this.fromNode) {
-                this.setCurrentNode(currentNode)
-                whichNode = this.fromNode
-            } else if (currentNode === this.toNode) {
-                this.setCurrentNode(currentNode)
-                whichNode = this.toNode
-            }
+        if (res.nodeVal !== undefined) {
+            this.setCurrentNode(res.nodeVal as string)
+        }
 
-            if (this._nodeAttrMap.isInMap(currentNode)) {
-                console.log(`${currentNode} is in map already with value: ${this._nodeAttrMap.getMapVal(currentNode)}`)
-                line = this._nodeAttrMap.getMapVal(currentNode)
-                whichNode = ''
-            }
-
-            if (whichNode !== '') {
-                line += this.nodeTemplate
-
-                this._nodeAttrMap.addItem(whichNode, line, this.nodeRows, this.nodeCols)
-            }
-
-            return line
-        }).join('\n')
-        console.log(`Added edge ${this.fromNode} -> ${this.toNode}`)
-
-        this.render(temp)
+        this.render(res.dot as string)
     }
 
     public getDim = () => {
@@ -303,15 +176,14 @@ export default class Chart extends Vue {
 
     mounted () {
         this.getDim()
-        this._graph = new Graph()
-        this._graph.setNode('graph', { lines: 'ortho', ranksep: '0.1' })
         this._nodeAttrMap = new NodeHTMLMap()
+        this._nodeGraph = new NodeGraph()
 
         d3.select('#graph')
         .graphviz()
         .height(this.height)
         .width(this.width)
-        .renderDot(dot.write(this._graph))
+        .renderDot(this._nodeGraph.getDot())
         .on('end', this.interactive)
     }
 }
