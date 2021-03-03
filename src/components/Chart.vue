@@ -71,7 +71,7 @@ import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import 'd3-graphviz'
 import { Graph } from 'graphlib'
-import { HTMLMap, HTMLTableBuilder, HTMLListBuilder, HTMLEmptyTable, HTMLWrapper, NodeHTMLMap, NodeGraph, RetVal } from '../util'
+import { HTMLEmptyTable, HTMLWrapper, NodeGraph, RetVal } from '../util'
 import * as dot from 'graphlib-dot'
 import { select, selectAll, Selection } from 'd3-selection'
 
@@ -100,7 +100,6 @@ export default class Chart extends Vue {
 
     private nodeTemplate: string = HTMLWrapper(HTMLEmptyTable(this.nodeRows, this.nodeCols))
 
-    private _nodeAttrMap: NodeHTMLMap = new NodeHTMLMap()
     private _nodeGraph: NodeGraph = new NodeGraph()
 
     public blankTemplate () {
@@ -176,7 +175,6 @@ export default class Chart extends Vue {
 
     mounted () {
         this.getDim()
-        this._nodeAttrMap = new NodeHTMLMap()
         this._nodeGraph = new NodeGraph()
 
         d3.select('#graph')
