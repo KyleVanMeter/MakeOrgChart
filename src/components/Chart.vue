@@ -6,7 +6,8 @@
     <div id="cont">
         <h1> MakeOrgChart </h1>
         <div id='circle' ref='stuff'>
-            <button v-on:click="collapseLeafNodes">Click Me :)</button>
+            <button v-on:click="collapseAllLeafNodes">Collapse All</button>
+            <button v-on:click="collapseLeafNodes">Collapse Selected Node Children</button>
             <button v-on:click="() => {
                 showAdd = !showAdd
                 showEdg = false
@@ -87,6 +88,7 @@ export default class Chart extends Vue {
 
     private currNode: string = ''
     private prevNode: string = ''
+    private selectedNode?: string
 
     private nodeData: string = ''
     private toNode: string = ''
@@ -123,8 +125,13 @@ export default class Chart extends Vue {
         .on('end', this.interactive)
     }
 
-    public collapseLeafNodes () {
-        this._nodeGraph.collapseLeafNodes()
+    public collapseAllLeafNodes () {
+        this._nodeGraph.collapseAllLeafNodes()
+        this.render(this._nodeGraph.getDot())
+    }
+
+    public collapseLeafNodes() {
+        this._nodeGraph.collapseLeafNodes(this.selectedNode)
         this.render(this._nodeGraph.getDot())
     }
 
@@ -132,10 +139,16 @@ export default class Chart extends Vue {
         let nodes = selectAll('.node')
         nodes.on('click', event => {
             const nodeKey: string = document.getElementById(event.attributes.id).__data__.key
+            if (nodeKey !== this.selectedNode) {
+                this.selectedNode = nodeKey
+            } else {
+                this.selectedNode = undefined
+            }
+
             this.render(this._nodeGraph.clickHandler(nodeKey))
         })
 
-        console.log(`current: ${this.currNode}, previous: ${this.prevNode}`)
+        console.log(`current: ${this.currNode}, previous: ${this.prevNode}, selected: ${this.selectedNode}`)
     }
 
     public deleteNodeEvent () {

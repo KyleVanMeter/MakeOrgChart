@@ -201,7 +201,7 @@ export class NodeGraph {
         return dot.write(this._graph)
     }
 
-    public collapseLeafNodes() {
+    public collapseAllLeafNodes() {
         /*
          * Get the list of leaf nodes in the graph by checking if they have 0
          * children
@@ -253,6 +253,23 @@ export class NodeGraph {
         })
 
         console.log('result is ', dot.write(this._graph))
+    }
+
+    public collapseLeafNodes(parentNode?: string) {
+        if (parentNode === undefined || parentNode === null) {
+            return
+        }
+
+        const children: string[] = this._graph.successors(parentNode) as string[]
+
+        children.forEach((child: string, index: number) => {
+            if (index === 0) {
+                return
+            }
+
+            this._graph.setEdge(parentNode, child, { constraint: 'false' })
+            this._graph.setEdge(children[index - 1], child, { style: 'invis' })
+        })
     }
 
     public expandLeafNodes() {
