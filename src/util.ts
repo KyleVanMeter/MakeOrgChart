@@ -95,7 +95,17 @@ export class NodeGraph {
     }
 
     public getDot(): string {
-        return dot.write(this._graph)
+        let temp: string = dot.write(this._graph).split('\n').map((line: string) => {
+            let currentNode: string = line.trim()
+
+            if (this._nodeAttrMap.isInMap(currentNode)) {
+                line = this._nodeAttrMap.getMapVal(currentNode)
+            }
+
+            return line
+        }).join('\n')
+
+        return temp
     }
 
     public addNode(nodeData: string, nodeTemplate: string, nodeRows: number, nodeCols: number): RetVal {

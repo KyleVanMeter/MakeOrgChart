@@ -125,6 +125,7 @@ export default class Chart extends Vue {
 
     public collapseLeafNodes () {
         this._nodeGraph.collapseLeafNodes()
+        this.render(this._nodeGraph.getDot())
     }
 
     public interactive () {
