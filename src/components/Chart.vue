@@ -135,6 +135,16 @@ export default class Chart extends Vue {
         this.render(this._nodeGraph.getDot())
     }
 
+    public unCollapseLeafNodes() {
+        this._nodeGraph.expandLeafNodes(this.selectedNode)
+        this.render(this._nodeGraph.getDot())
+    }
+
+    public unCollapseAllLeafNodes() {
+        this._nodeGraph.expandAllLeafNodes()
+        this.render(this._nodeGraph.getDot())
+    }
+
     public interactive () {
         let nodes = selectAll('.node')
         nodes.on('click', event => {
